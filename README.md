@@ -12,6 +12,31 @@
 ### JsonResponseDeleteView
 ###### Delete model object and respond same object in json encoded format
 
+** Example: **
+`Model`
+```Python
+class Application(models.Model):
+    registration_date = models.CharField(max_length=15)
+    reg = models.ForeignKey(NewRegistration)
+
+
+class RegistrationDocument(models.Model):
+    reg = models.ForeignKey(to=NewRegistration)
+    remarks = models.TextField(null=True, blank=True)
+    document_name = models.CharField(max_length=140, blank=True, null=True)
+    _created_timestamp = models.DateTimeField(auto_now_add=True)
+    _updated_timestamp = models.DateTimeField(auto_now=True)
+    attached_file = models.FileField(upload_to="attached_files/")
+
+    class Meta:
+        abstract = True
+
+
+class RequiredDocument(RegistrationDocument):
+    attached_document = models.ForeignKey(to=system_settings.models.NewRegistrationRequiredDocument)
+```
+
+`Views`
 ```Python
 class RegistrationDetailUpdateCreateView(UpdateOrCreateJsonResponseCreateView):
     """
@@ -37,6 +62,12 @@ class RegistrationDetailUpdateCreateView(UpdateOrCreateJsonResponseCreateView):
         return super(RegistrationDetailUpdateCreateView, self).form_valid(form)
 
 
+class ApplicationCreate(RegistrationDetailUpdateCreateView):
+    model = models.Application
+    fields = '__all__'
+```
+
+```Python
 class RequiredDocumentDeleteView(JsonResponseDeleteView):
     model = models.RequiredDocument
 ```
